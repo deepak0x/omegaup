@@ -131,35 +131,34 @@ class Admin extends \OmegaUp\Controllers\Controller {
             self::MAINTENANCE_MESSAGE_TYPES
         ) ?? self::MAINTENANCE_MESSAGE_TYPES[self::INFO];
 
-        $cacheEnabled = new \OmegaUp\Cache(self::MAINTENANCE_ENABLED_KEY);
-        $cacheMessageEs = new \OmegaUp\Cache(self::MAINTENANCE_MESSAGE_ES_KEY);
-        $cacheMessageEn = new \OmegaUp\Cache(self::MAINTENANCE_MESSAGE_EN_KEY);
-        $cacheMessagePt = new \OmegaUp\Cache(self::MAINTENANCE_MESSAGE_PT_KEY);
-        $cacheMessageType = new \OmegaUp\Cache(
-            self::MAINTENANCE_MESSAGE_TYPE_KEY
-        );
-        if ($enabled) {
-            $cacheEnabled->set(value: true, timeout: 0); // No expiration
-            $cacheMessageEs->set($messageEs, timeout: 0);
-            $cacheMessageEn->set($messageEn, timeout: 0);
-            $cacheMessagePt->set($messagePt, timeout: 0);
+        $keysValues = [
+            self::MAINTENANCE_ENABLED_KEY => $enabled ? '1' : '0',
+            self::MAINTENANCE_MESSAGE_ES_KEY => $messageEs,
+            self::MAINTENANCE_MESSAGE_EN_KEY => $messageEn,
+            self::MAINTENANCE_MESSAGE_PT_KEY => $messagePt,
+            self::MAINTENANCE_MESSAGE_TYPE_KEY => $type,
+        ];
 
-            // Store the index, not the string value
-            $typeIndex = array_search(
-                $type,
-                self::MAINTENANCE_MESSAGE_TYPES,
-                strict: true
-            );
-            $cacheMessageType->set(
-                $typeIndex !== false ? $typeIndex : self::INFO,
-                timeout: 0
-            );
-        } else {
-            $cacheEnabled->delete();
-            $cacheMessageEs->delete();
-            $cacheMessageEn->delete();
-            $cacheMessagePt->delete();
-            $cacheMessageType->delete();
+        try {
+            \OmegaUp\DAO\DAO::transBegin();
+            foreach ($keysValues as $key => $value) {
+                $obj = \OmegaUp\DAO\SystemSettings::loadByKey($key);
+                if (is_null($obj)) {
+                    $obj = new \OmegaUp\DAO\SystemSettings();
+                    $obj->setKey($key);
+                }
+                $obj->setValue($value);
+                $obj->save();
+            }
+            \OmegaUp\DAO\DAO::transEnd();
+        } catch (\Exception $e) {
+            \OmegaUp\DAO\DAO::transRollback();
+            throw $e;
+        }
+
+        // Invalidate cache for all updated keys
+        foreach (array_keys($keysValues) as $key) {
+            \OmegaUp\DAO\SystemSettings::invalidateCache($key);
         }
 
         return ['status' => 'ok'];
