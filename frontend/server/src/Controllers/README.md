@@ -4,6 +4,9 @@
   - [`/api/admin/getCronRun/`](#apiadmingetcronrun)
   - [`/api/admin/getCrons/`](#apiadmingetcrons)
   - [`/api/admin/getMaintenanceMode/`](#apiadmingetmaintenancemode)
+  - [`/api/admin/getRoleAssignments/`](#apiadmingetroleassignments)
+  - [`/api/admin/getRoleDetails/`](#apiadmingetroledetails)
+  - [`/api/admin/getRoles/`](#apiadmingetroles)
   - [`/api/admin/getSystemSettings/`](#apiadmingetsystemsettings)
   - [`/api/admin/platformReportStats/`](#apiadminplatformreportstats)
   - [`/api/admin/rerunCron/`](#apiadminreruncron)
@@ -382,6 +385,52 @@ Get maintenance mode status
 ```typescript
 types.MaintenanceModeStatus;
 ```
+
+## `/api/admin/getRoleAssignments/`
+
+### Description
+
+### Parameters
+
+| Name              | Type           | Description | Required |
+| ----------------- | -------------- | ----------- | -------- |
+| `assignment_type` | `string`       |             | ✓        |
+| `page`            | `int`          |             | ✓        |
+| `page_size`       | `int`          |             | ✓        |
+| `role`            | `string`       |             | ✓        |
+| `query`           | `null\|string` |             |          |
+
+### Returns
+
+```typescript
+types.RoleAssignmentsResponse;
+```
+
+## `/api/admin/getRoleDetails/`
+
+### Description
+
+### Parameters
+
+| Name   | Type     | Description | Required |
+| ------ | -------- | ----------- | -------- |
+| `role` | `string` |             | ✓        |
+
+### Returns
+
+```typescript
+types.RoleDetails;
+```
+
+## `/api/admin/getRoles/`
+
+### Description
+
+### Returns
+
+| Name    | Type                      |
+| ------- | ------------------------- |
+| `roles` | `List[types.RoleSummary]` |
 
 ## `/api/admin/getSystemSettings/`
 
@@ -4442,13 +4491,13 @@ Create a new run
 
 ### Parameters
 
-| Name            | Type           | Description | Required |
-| --------------- | -------------- | ----------- | -------- |
-| `language`      | `string`       |             | ✓        |
-| `problem_alias` | `string`       |             | ✓        |
-| `source`        | `string`       |             | ✓        |
-| `contest_alias` | `null\|string` |             |          |
-| `problemset_id` | `int\|null`    |             |          |
+| Name            | Type           | Description                                         | Required |
+| --------------- | -------------- | --------------------------------------------------- | -------- |
+| `language`      | `string`       | Programming language used for the solution          | ✓        |
+| `problem_alias` | `string`       | Alias of the problem                                | ✓        |
+| `source`        | `string`       | Source code of the solution                         | ✓        |
+| `contest_alias` | `null\|string` | Alias of the contest                                |          |
+| `problemset_id` | `int\|null`    | ID of the problemset associated with the submission |          |
 
 ### Returns
 
@@ -4467,9 +4516,9 @@ Gets the details of a run. Includes admin details if admin.
 
 ### Parameters
 
-| Name        | Type     | Description | Required |
-| ----------- | -------- | ----------- | -------- |
-| `run_alias` | `string` |             | ✓        |
+| Name        | Type     | Description             | Required |
+| ----------- | -------- | ----------------------- | -------- |
+| `run_alias` | `string` | Alias (GUID) of the run | ✓        |
 
 ### Returns
 
@@ -4563,15 +4612,15 @@ Gets a list of latest runs overall
 
 ### Parameters
 
-| Name            | Type                                                                                                                                                                                                                      | Description | Required |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | -------- |
-| `offset`        | `int`                                                                                                                                                                                                                     |             | ✓        |
-| `problem_alias` | `string`                                                                                                                                                                                                                  |             | ✓        |
-| `rowcount`      | `int`                                                                                                                                                                                                                     |             | ✓        |
-| `username`      | `string`                                                                                                                                                                                                                  |             | ✓        |
-| `language`      | `'c11-clang'\|'c11-gcc'\|'cat'\|'cpp11-clang'\|'cpp11-gcc'\|'cpp17-clang'\|'cpp17-gcc'\|'cpp20-clang'\|'cpp20-gcc'\|'cs'\|'go'\|'hs'\|'java'\|'js'\|'kj'\|'kp'\|'rk'\|'kt'\|'lua'\|'pas'\|'py2'\|'py3'\|'rb'\|'rs'\|null` |             |          |
-| `status`        | `'compiling'\|'new'\|'ready'\|'running'\|'waiting'\|null`                                                                                                                                                                 |             |          |
-| `verdict`       | `'AC'\|'CE'\|'JE'\|'MLE'\|'NO-AC'\|'OLE'\|'PA'\|'RFE'\|'RTE'\|'TLE'\|'VE'\|'WA'\|null`                                                                                                                                    |             |          |
+| Name            | Type                                                                                                                                                                                                                      | Description                                                           | Required |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------- |
+| `offset`        | `int`                                                                                                                                                                                                                     | Number of runs to skip before returning results (used for pagination) | ✓        |
+| `problem_alias` | `string`                                                                                                                                                                                                                  | Alias of the problem                                                  | ✓        |
+| `rowcount`      | `int`                                                                                                                                                                                                                     | Maximum number of runs to return                                      | ✓        |
+| `username`      | `string`                                                                                                                                                                                                                  | Filter runs by the user who submitted them                            | ✓        |
+| `language`      | `'c11-clang'\|'c11-gcc'\|'cat'\|'cpp11-clang'\|'cpp11-gcc'\|'cpp17-clang'\|'cpp17-gcc'\|'cpp20-clang'\|'cpp20-gcc'\|'cs'\|'go'\|'hs'\|'java'\|'js'\|'kj'\|'kp'\|'rk'\|'kt'\|'lua'\|'pas'\|'py2'\|'py3'\|'rb'\|'rs'\|null` | Filter runs by programming language                                   |          |
+| `status`        | `'compiling'\|'new'\|'ready'\|'running'\|'waiting'\|null`                                                                                                                                                                 | Filter runs by grading status                                         |          |
+| `verdict`       | `'AC'\|'CE'\|'JE'\|'MLE'\|'NO-AC'\|'OLE'\|'PA'\|'RFE'\|'RTE'\|'TLE'\|'VE'\|'WA'\|null`                                                                                                                                    | Filter runs by the judge's verdict                                    |          |
 
 ### Returns
 
@@ -4622,9 +4671,9 @@ Used in the arena, any contestant can view its own codes and compile errors
 
 ### Parameters
 
-| Name        | Type     | Description | Required |
-| ----------- | -------- | ----------- | -------- |
-| `run_alias` | `string` |             | ✓        |
+| Name        | Type     | Description             | Required |
+| ----------- | -------- | ----------------------- | -------- |
+| `run_alias` | `string` | Alias (GUID) of the run | ✓        |
 
 ### Returns
 
